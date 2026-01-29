@@ -4,6 +4,7 @@ import base64
 import argparse
 import re
 from pathlib import Path
+import hashlib
 
 # Map languages to template filenames
 TEMPLATE_FILES = {
@@ -30,7 +31,7 @@ def load_template(language):
         print(f"[!] Error: Template file not found for {language}: {template_path}")
         exit(1)
 
-def generate_dropper(input_file, language, filename, chunk_size):
+def generate_dropper(input_file, language, path, chunk_size):
     with open(input_file, "rb") as f:
         b64_data = base64.b64encode(f.read()).decode()
 
@@ -53,15 +54,17 @@ def generate_dropper(input_file, language, filename, chunk_size):
     # Use Regex to allow for spaces like { chunks } and optional quotes like "{chunks}"
     if "{{" not in template:
          code = re.sub(r'"?{\s*chunks\s*}"?', formatted_chunks, template)
-         code = re.sub(r'{\s*filename\s*}', filename, code)
+         code = re.sub(r'{\s*(filename|path)\s*}', path, code)
     else:
          # Fallback to format() for legacy templates with escaped braces {{ }}
          try:
-             code = template.format(chunks=formatted_chunks, filename=filename)
+             code = template.format(chunks=formatted_chunks, filename=path, path=path)
+             
          except (ValueError, KeyError):
              # If format fails (e.g. mixed syntax), try replace as fallback
              code = re.sub(r'"?{\s*chunks\s*}"?', formatted_chunks, template)
-             code = re.sub(r'{\s*filename\s*}', filename, code)
+             code = re.sub(r'{\s*(filename|path)\s*}', path, code)
+    return code
 
 def chunk_base64_file_legacy(input_file, output_dir, chunk_size):
     """Legacy mode: Split into multiple text files."""
@@ -81,9 +84,21 @@ def chunk_base64_file_legacy(input_file, output_dir, chunk_size):
 
     return parts
 
+def file_hash(path, algo="md5"):
+    h = hashlib.new(algo)
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert a binary file to a base64 dropper script in various languages."
+        description="Convert a binary file to a base64 dropper script in various languages.",
+        epilog="""
+Example:
+
+  python3 b64dropper.py mimikatz.exe -l groovy  -o build_mimikatz.groovy -s 4000  -p /tmp/mimikatz 
+        """,        
+   
     )
     parser.add_argument("input_file", help="Path to the input binary file (e.g. tool.exe)")
     parser.add_argument(
@@ -96,9 +111,9 @@ def main():
         help="Output file (for script) or directory (for legacy chunks)"
     )
     parser.add_argument(
-        "-f", "--filename",
+        "-p", "--path",
         default="dropped_file.bin",
-        help="Name of the file to be created on the target system (used in script mode)"
+        help="Path where the file will be created on the target system"
     )
     parser.add_argument(
         "-s", "--chunk-size",
@@ -106,6 +121,7 @@ def main():
         default=6000,
         help="Length of each chunk string (default: 6000)"
     )
+
 
     args = parser.parse_args()
 
@@ -127,15 +143,15 @@ def main():
             output_path = ext_map[args.language]
         else:
             output_path = args.output
-
+        print(f"[~] {args.input_file} md5sum:",file_hash(args.input_file))
         print(f"[*] Generating {args.language} dropper script with chunk size {args.chunk_size}...")
-        script_content = generate_dropper(args.input_file, args.language, args.filename, args.chunk_size)
+        script_content = generate_dropper(args.input_file, args.language, args.path, args.chunk_size)
         
         with open(output_path, "w") as f:
             f.write(script_content)
         
         print(f"[+] Dropper script saved to: {os.path.abspath(output_path)}")
-        print(f"[*] Target filename inside script: {args.filename}")
+        print(f"[*] Target path inside script: {args.path}")
 
     # Legacy mode (no language specified)
     else:
