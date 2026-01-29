@@ -38,7 +38,8 @@ options:
                         Target programming language for the dropper script
   -o OUTPUT, --output OUTPUT
                         Output file (for script) or directory (for legacy chunks)
-  -f FILENAME, --filename FILENAME
+   -p PATH, --path PATH  Path where the file will be created on the target system
+
                         Name of the file to be created on the target system (used in script mode)
   -s CHUNK_SIZE, --chunk-size CHUNK_SIZE
                         Length of each chunk string (default: 6000)
