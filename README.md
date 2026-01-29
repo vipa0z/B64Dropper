@@ -17,6 +17,8 @@ initial targets included:
 - **Jenkins**: Leveraging Groovy script console or agent execution to drop tooling on build nodes.
 - **Liferay**: Used in POCs targeting Liferay portal script console to drop bindshells
 
+## POC
+![poc](poc.gif)
 
 ## Usage 
 
@@ -41,6 +43,8 @@ options:
   -s CHUNK_SIZE, --chunk-size CHUNK_SIZE
                         Length of each chunk string (default: 6000)
 ```
+
+
 ## EXAMPLES
 
 Generate a dropper for a small tool (e.g., `nc.exe`) to be executed via a Python interpreter on the target:
