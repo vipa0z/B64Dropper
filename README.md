@@ -1,7 +1,6 @@
-# B64Dropper
+
 
 ## Description
-
 B64Dropper facilitates **Living off the Land (LotL)** by converting binaries into polyglot scripts (Java, Python, Bash, etc.) with embedded Base64 payloads. It enables tool transfers using only standard libraries, bypassing the need for outbound connections.
 In simpler terms, this is useful when you have access to script consoles or features that allow programmatic interaction with the host, but are limited to basic shell commands. It allows you to transfer binaries/redteam tools through standard script code (like Java or Python) to reconstruct the executable on the target.
 
@@ -17,12 +16,20 @@ initial targets included:
 - **Jenkins**: Leveraging Groovy script console or agent execution to drop tooling on build nodes.
 - **Liferay**: Used in POCs targeting Liferay portal script console to drop bindshells
 
-## POC
-![poc](poc.gif)
+
 
 ## Usage 
 
 ```text
+python3 b64dropper.py
+
+.#####.....##........##..#####...#####....####...#####...#####...######..#####..
+.##..##...##.....##..##..##..##..##..##..##..##..##..##..##..##..##......##..##.
+.#####...#####...######..##..##..#####...##..##..#####...#####...####....#####..
+.##..##..##..##......##..##..##..##..##..##..##..##......##......##......##..##.
+.#####....####.......##..#####...##..##...####...##......##......######..##..##.
+................................................................................
+
 usage: b64dropper.py [-h] [-l {groovy,java,js,python,powershell,bash,go,csharp,cpp}] [-o OUTPUT]
                      [-f FILENAME] [-s CHUNK_SIZE]
                      input_file
@@ -44,17 +51,17 @@ options:
   -s CHUNK_SIZE, --chunk-size CHUNK_SIZE
                         Length of each chunk string (default: 6000)
 ```
-
-
-## EXAMPLE
-
-Generate a dropper for a small tool (e.g., `nc.exe`) to be executed via a Python interpreter on the target:
+## POC
+ Generate a dropper for a small tool (e.g., `nc.exe`) to be executed via groovy interpreter on the target:
 
 ```bash
 python3 b64dropper.py nc.exe -l groovy -f nc.exe -o nc_dropper_script.groovy
 # copy to your clipboard
 cat deploy_nc.groovy | xclip -selection clipboard -i
 ```
+
+![poc](poc.gif)
+
 
 ---
 
