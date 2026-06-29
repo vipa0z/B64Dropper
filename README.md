@@ -1,6 +1,13 @@
+```
 
-
-## Description
+.#####.....##........##..#####...#####....####...#####...#####...######..#####..
+.##..##...##.....##..##..##..##..##..##..##..##..##..##..##..##..##......##..##.
+.#####...#####...######..##..##..#####...##..##..#####...#####...####....#####..
+.##..##..##..##......##..##..##..##..##..##..##..##......##......##......##..##.
+.#####....####.......##..#####...##..##...####...##......##......######..##..##.
+................................................................................
+```
+## B64Dropper
 B64Dropper facilitates **Living off the Land (LotL)** by converting binaries into polyglot scripts (Java, Python, Bash, etc.) with embedded Base64 payloads. It enables tool transfers using only standard libraries, bypassing the need for outbound connections.
 In simpler terms, this is useful when you have access to script consoles or features that allow programmatic interaction with the host, but are limited to basic shell commands. It allows you to transfer binaries/redteam tools through standard script code (like Java or Python) to reconstruct the executable on the target.
 
